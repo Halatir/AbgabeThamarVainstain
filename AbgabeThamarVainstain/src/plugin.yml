@@ -5,6 +5,11 @@ webside:
 main: Main
 version: 0.8
 
+commands:
+     Tunnel:
+        description: Create a secret tunnel
+        usage: /Tunnel<>
+
 
 
 

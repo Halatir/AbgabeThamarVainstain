@@ -42,36 +42,36 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(command.getName().equalsIgnoreCase("Tunnel")) {
+            //Testen, ob der Sender ein Player ist
             if (sender instanceof Player) {
+                //get the Player
                 Player p=(Player) sender;
+                //Locations für den Player und den Beginn des Tunnels
                 Location l=p.getLocation();
                 Location lp=p.getLocation();
+
                 World w=p.getWorld();
 
-                //Modify the location in x and z+0,5
-                //l.setX(((int) l.getX()) + 0.5);
+                //geringes versetzen des Players
                 lp.setZ(((int) l.getZ()) + 0.5);
-
-
                 p.teleport(lp);
 
-                Block a;
+               //Das Loch als Einstieg für den Tunnel
                for(int i=1 ;i<4; i++){
+                   Block a;
                    l.setY(((int)l.getY())-1);
-                     a = w.getBlockAt((int) l.getX(), (int) l.getY(), (int) l.getZ());
-                    a.setType(Material.AIR);
+                   a = w.getBlockAt((int) l.getX(), (int) l.getY(), (int) l.getZ());
+                   a.setType(Material.AIR);
                }
 
-
-                Vector v=new Vector((int)l.getX(),(int)l.getY(),(int)l.getZ());
-                    //Direction festlegen
+                //Vector der Position, an dem der Tunnel beginnen soll
+                Vector start=new Vector((int)l.getX(),(int)l.getY(),(int)l.getZ());
+                //Richtung festlegen
                 float f= p.getLocation().getYaw();
-
                 Vector Yaw=getDirection(f);
 
-
-
-                Tunnelbau(w,v,Yaw, l);
+                //Der Tunnel wird gebaut
+                Tunnelbau(w,start,Yaw);
 
 
 
@@ -112,6 +112,7 @@ public class Main extends JavaPlugin implements Listener {
         }*/
     }
 
+    //Funktion zum erhalten der Blickrichtung
     public Vector getDirection(float f){
         Vector direction=new Vector(0,0,0);
         if(f>=315.0 || f<45.0 ) {
@@ -127,61 +128,74 @@ public class Main extends JavaPlugin implements Listener {
     }
 
 
-    public void Tunnelbau(World w,Vector v,Vector d, Location l){
+    public void Tunnelbau(World w,Vector v,Vector d){
 
-        BlockIterator BI = new BlockIterator(w, v, d, 0,15);
-        Block b=w.getBlockAt(l);
+        BlockIterator BI = new BlockIterator(w, v, d, 0,20);
+        Block b=w.getBlockAt(1,1,1);
 
         while (BI.hasNext() == true) {
 
+            //Die zwei Blöcke, die entfernt werden sollen
             b = BI.next();
             Block b2=w.getBlockAt(b.getX(), (b.getY() + 1), b.getZ());
 
-                b.setType(Material.AIR);
-                b2.setType(Material.AIR);
-                b2=w.getBlockAt(b.getX(),(b.getY()-1),b.getZ());
-                b2.setType(Material.DIRT);
+            //sie werden in Luftblöcke umgewandelt
+            b.setType(Material.AIR);
+            b2.setType(Material.AIR);
+            //wähle den Block darunter und verwandle ihn in Erde (Notwendig für Sand/Wasser/Lava/Kies)
+            b2=w.getBlockAt(b.getX(),(b.getY()-1),b.getZ());
+            b2.setType(Material.DIRT);
 
-                if(d.getZ()==1 || d.getZ()==-1) {
-                    if(d.getZ()==1) {
-                        b2 = w.getBlockAt(b.getX(), (b.getY() + 2), (b.getZ() + 1));
-                        b2.setType(Material.DIRT);
-                    }
-                    else{
-                        b2 = w.getBlockAt(b.getX(), (b.getY() + 2), (b.getZ() - 1));
-                        b2.setType(Material.DIRT);
-                    }
-                    b2 = w.getBlockAt((b.getX() + 1), b.getY(), b.getZ());
-                    b2.setType(Material.DIRT);
-                    b2 = w.getBlockAt((b.getX() - 1), b.getY(), b.getZ());
-                    b2.setType(Material.DIRT);
-                    b2 = w.getBlockAt((b.getX() + 1), (b.getY() + 1), b.getZ());
-                    b2.setType(Material.DIRT);
-                    b2 = w.getBlockAt((b.getX() - 1), (b.getY() + 1), b.getZ());
+
+            //Tunnelbau in Z-Richtung(positiv oder negativ)
+            if(d.getZ()==1 || d.getZ()==-1) {
+                if(d.getZ()==1) {
+                    //Decke des Tunnels(Notwendig für Sand/Wasser/Lava/Kies)
+                    b2 = w.getBlockAt(b.getX(), (b.getY() + 2), (b.getZ() + 1));
                     b2.setType(Material.DIRT);
                 }
-                else if(d.getX()==1 || d.getX()==-1) {
-                    if(d.getX()==1) {
-                        b2 = w.getBlockAt((b.getX()+1), (b.getY() + 2), b.getZ());
-                        b2.setType(Material.DIRT);
-                    }
-                    else{
-                        b2 = w.getBlockAt((b.getX()-1), (b.getY() + 2), b.getZ());
-                        b2.setType(Material.DIRT);
-                    }
-                    b2=w.getBlockAt(b.getX(),b.getY(),(b.getZ()+1));
-                    b2.setType(Material.DIRT);
-                    b2=w.getBlockAt(b.getX(),b.getY(),(b.getZ()-1));//hier x -1 weg
-                    b2.setType(Material.DIRT);
-                    b2=w.getBlockAt(b.getX(),(b.getY()+1),(b.getZ()+1));
-                    b2.setType(Material.DIRT);
-                    b2=w.getBlockAt(b.getX(),(b.getY()+1),(b.getZ()-1));//und hier
+                else{
+                    //Decke des Tunnels(Notwendig für Sand/Wasser/Lava/Kies)
+                    b2 = w.getBlockAt(b.getX(), (b.getY() + 2), (b.getZ() - 1));
                     b2.setType(Material.DIRT);
                 }
+                //Seitenwände des Tunnels(Notwendig für Sand/Wasser/Lava/Kies)
+                b2 = w.getBlockAt((b.getX() + 1), b.getY(), b.getZ());
+                b2.setType(Material.DIRT);
+                b2 = w.getBlockAt((b.getX() - 1), b.getY(), b.getZ());
+                b2.setType(Material.DIRT);
+                b2 = w.getBlockAt((b.getX() + 1), (b.getY() + 1), b.getZ());
+                b2.setType(Material.DIRT);
+                b2 = w.getBlockAt((b.getX() - 1), (b.getY() + 1), b.getZ());
+                b2.setType(Material.DIRT);
+            }
+            //Tunnelbau in X-Richtung(positiv oder negativ)
+            else if(d.getX()==1 || d.getX()==-1) {
+                if(d.getX()==1) {
+                    //Decke des Tunnels(Notwendig für Sand/Wasser/Lava/Kies)
+                    b2 = w.getBlockAt((b.getX()+1), (b.getY() + 2), b.getZ());
+                    b2.setType(Material.DIRT);
+                }
+                else{
+                    //Decke des Tunnels(Notwendig für Sand/Wasser/Lava/Kies)
+                    b2 = w.getBlockAt((b.getX()-1), (b.getY() + 2), b.getZ());
+                    b2.setType(Material.DIRT);
+                }
+                //Seitenwände des Tunnels(Notwendig für Sand/Wasser/Lava/Kies)
+                b2=w.getBlockAt(b.getX(),b.getY(),(b.getZ()+1));
+                b2.setType(Material.DIRT);
+                b2=w.getBlockAt(b.getX(),b.getY(),(b.getZ()-1));
+                b2.setType(Material.DIRT);
+                b2=w.getBlockAt(b.getX(),(b.getY()+1),(b.getZ()+1));
+                b2.setType(Material.DIRT);
+                b2=w.getBlockAt(b.getX(),(b.getY()+1),(b.getZ()-1));
+                b2.setType(Material.DIRT);
+            }
 
         }
         //Ausgang
         Block b3;
+        //Richtung wird festgelegt, in die der Ausgang gebaut wird
         int z=0;
         int x=0;
         if(d.getZ()==1){z=1;x=0;}
@@ -189,7 +203,7 @@ public class Main extends JavaPlugin implements Listener {
         else if(d.getX()==1){z=0;x=1;}
         else if(d.getX()==-1) {z=0;x=-1;}
 
-
+        //Treppenschleife(Läuft, bis Luft erreicht wird)(Wasser wird hier nicht berücksichtigt, könnte zur endlosschleife führen)
         b3 = w.getBlockAt((b.getX()+x),(b.getY()+1),(b.getZ()+z));
         b=w.getBlockAt(b.getX(),(b.getY()+1),b.getZ());
         while(b3.getType()!=Material.AIR){
@@ -205,3 +219,4 @@ public class Main extends JavaPlugin implements Listener {
 
 
 }
+

@@ -8,7 +8,10 @@ version: 0.8
 commands:
      Tunnel:
         description: Create a secret tunnel
-        usage: /Tunnel<>
+        usage: /Tunnel
+     FortuneWheel:
+        description: Create and use a fortunewheel
+        usage: /FortueWheel
 
 
 

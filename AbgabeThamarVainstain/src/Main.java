@@ -45,14 +45,30 @@ public class Main extends JavaPlugin implements Listener {
             if (sender instanceof Player) {
                 Player p=(Player) sender;
                 Location l=p.getLocation();
-                List<Entity> near = p.getNearbyEntities(l.getX(),l.getY(),l.getZ());
+                World w=p.getWorld();
 
-                for(Entity target: near) {
-                    Vector Y= new Vector(0,5,0);
-                    //if(target instanceof Player){}    falls nur player geschmissern werden sollen
-                    target.setVelocity(Y);
+                //Modify the location in x and z+0,5
+                l.setX(((int) l.getX()) + 0.5);
+                l.setZ(((int) l.getZ()) + 0.5);
+                p.teleport(l);
 
-                }
+                Block a;
+               for(int i=1 ;i<4; i++){
+                   l.setY(((int)l.getY())-1);
+                     a = w.getBlockAt((int) l.getX(), (int) l.getY(), (int) l.getZ());
+                    a.setType(Material.AIR);
+               }
+
+
+                Vector v=new Vector((int)l.getX(),(int)l.getY(),(int)l.getZ());
+                    //Direction festlegen
+                float f= p.getLocation().getYaw();
+                Vector Yaw=getDirection(f);
+
+
+                Tunnelbau(w,v,Yaw, l);
+
+
 
             }
         }
@@ -76,7 +92,7 @@ public class Main extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerInteractBlock(PlayerInteractEvent event){
-        Player p=event.getPlayer();
+      /*  Player p=event.getPlayer();
         if(p.getItemInHand().getType()== Material.DIRT) {
             BlockIterator BI = new BlockIterator(p,5);
             while(BI.hasNext()==true){
@@ -88,10 +104,77 @@ public class Main extends JavaPlugin implements Listener {
                 }
             }
 
+        }*/
+    }
+
+    public Vector getDirection(float f){
+        Vector direction=new Vector(0,0,0);
+        if(f>=315.0 || f<45.0 ) {
+            direction= new Vector(0,0,1);
+        } else if(f>=135.0 && f<=225.0){
+            direction=new Vector(0,0,-1);
+        } else if(f>=45.0 && f<135.0){
+            direction=new Vector(-1,0,0);
+        } else {
+            direction=new Vector(1,0,0);
         }
+        return direction;
     }
 
 
+    public void Tunnelbau(World w,Vector v,Vector d, Location l){
+
+        BlockIterator BI = new BlockIterator(w, v, d, 0,15);
+        while (BI.hasNext() == true) {
+
+            Block b = BI.next();
+            Block b2=w.getBlockAt(b.getX(),(b.getY()+1),b.getZ());
+
+                b.setType(Material.AIR);
+                b2.setType(Material.AIR);
+                b2=w.getBlockAt(b.getX(),(b.getY()-1),b.getZ());
+                b2.setType(Material.DIRT);
+
+                if(d.getZ()==1 || d.getZ()==-1) {
+                    if(d.getZ()==1) {
+                        b2 = w.getBlockAt(b.getX(), (b.getY() + 2), (b.getZ() + 1));
+                        b2.setType(Material.DIRT);
+                    }
+                    else{
+                        b2 = w.getBlockAt(b.getX(), (b.getY() + 2), (b.getZ() - 1));
+                        b2.setType(Material.DIRT);
+                    }
+                    b2 = w.getBlockAt((b.getX() + 1), b.getY(), b.getZ());
+                    b2.setType(Material.DIRT);
+                    b2 = w.getBlockAt((b.getX() - 1), b.getY(), b.getZ());
+                    b2.setType(Material.DIRT);
+                    b2 = w.getBlockAt((b.getX() + 1), (b.getY() + 1), b.getZ());
+                    b2.setType(Material.DIRT);
+                    b2 = w.getBlockAt((b.getX() - 1), (b.getY() + 1), b.getZ());
+                    b2.setType(Material.DIRT);
+                }
+                else if(d.getX()==1 || d.getX()==-1) {
+                    if(d.getZ()==1) {
+                        b2 = w.getBlockAt((b.getX()+1), (b.getY() + 2), b.getZ());
+                        b2.setType(Material.DIRT);
+                    }
+                    else{
+                        b2 = w.getBlockAt((b.getX()-1), (b.getY() + 2), b.getZ());
+                        b2.setType(Material.DIRT);
+                    }
+                    b2=w.getBlockAt(b.getX(),b.getY(),(b.getZ()+1));
+                    b2.setType(Material.DIRT);
+                    b2=w.getBlockAt((b.getX()-1),b.getY(),(b.getZ()-1));
+                    b2.setType(Material.DIRT);
+                    b2=w.getBlockAt(b.getX(),(b.getY()+1),(b.getZ()+1));
+                    b2.setType(Material.DIRT);
+                    b2=w.getBlockAt((b.getX()-1),(b.getY()+1),(b.getZ()-1));
+                    b2.setType(Material.DIRT);
+                }
+
+        }
+
+    }
 
 
 }

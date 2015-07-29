@@ -45,12 +45,15 @@ public class Main extends JavaPlugin implements Listener {
             if (sender instanceof Player) {
                 Player p=(Player) sender;
                 Location l=p.getLocation();
+                Location lp=p.getLocation();
                 World w=p.getWorld();
 
                 //Modify the location in x and z+0,5
-                l.setX(((int) l.getX()) + 0.5);
-                l.setZ(((int) l.getZ()) + 0.5);
-                p.teleport(l);
+                //l.setX(((int) l.getX()) + 0.5);
+                lp.setZ(((int) l.getZ()) + 0.5);
+
+
+                p.teleport(lp);
 
                 Block a;
                for(int i=1 ;i<4; i++){
@@ -63,7 +66,9 @@ public class Main extends JavaPlugin implements Listener {
                 Vector v=new Vector((int)l.getX(),(int)l.getY(),(int)l.getZ());
                     //Direction festlegen
                 float f= p.getLocation().getYaw();
+
                 Vector Yaw=getDirection(f);
+
 
 
                 Tunnelbau(w,v,Yaw, l);
@@ -115,7 +120,7 @@ public class Main extends JavaPlugin implements Listener {
             direction=new Vector(0,0,-1);
         } else if(f>=45.0 && f<135.0){
             direction=new Vector(-1,0,0);
-        } else {
+        } else if(f>225.0 && f<315.0){
             direction=new Vector(1,0,0);
         }
         return direction;
@@ -125,10 +130,12 @@ public class Main extends JavaPlugin implements Listener {
     public void Tunnelbau(World w,Vector v,Vector d, Location l){
 
         BlockIterator BI = new BlockIterator(w, v, d, 0,15);
+        Block b=w.getBlockAt(l);
+
         while (BI.hasNext() == true) {
 
-            Block b = BI.next();
-            Block b2=w.getBlockAt(b.getX(),(b.getY()+1),b.getZ());
+            b = BI.next();
+            Block b2=w.getBlockAt(b.getX(), (b.getY() + 1), b.getZ());
 
                 b.setType(Material.AIR);
                 b2.setType(Material.AIR);
@@ -154,7 +161,7 @@ public class Main extends JavaPlugin implements Listener {
                     b2.setType(Material.DIRT);
                 }
                 else if(d.getX()==1 || d.getX()==-1) {
-                    if(d.getZ()==1) {
+                    if(d.getX()==1) {
                         b2 = w.getBlockAt((b.getX()+1), (b.getY() + 2), b.getZ());
                         b2.setType(Material.DIRT);
                     }
@@ -164,16 +171,36 @@ public class Main extends JavaPlugin implements Listener {
                     }
                     b2=w.getBlockAt(b.getX(),b.getY(),(b.getZ()+1));
                     b2.setType(Material.DIRT);
-                    b2=w.getBlockAt((b.getX()-1),b.getY(),(b.getZ()-1));
+                    b2=w.getBlockAt(b.getX(),b.getY(),(b.getZ()-1));//hier x -1 weg
                     b2.setType(Material.DIRT);
                     b2=w.getBlockAt(b.getX(),(b.getY()+1),(b.getZ()+1));
                     b2.setType(Material.DIRT);
-                    b2=w.getBlockAt((b.getX()-1),(b.getY()+1),(b.getZ()-1));
+                    b2=w.getBlockAt(b.getX(),(b.getY()+1),(b.getZ()-1));//und hier
                     b2.setType(Material.DIRT);
                 }
 
         }
+        //Ausgang
+        Block b3;
+        int z=0;
+        int x=0;
+        if(d.getZ()==1){z=1;x=0;}
+        else if(d.getZ()==-1){z=-1;x=0;}
+        else if(d.getX()==1){z=0;x=1;}
+        else if(d.getX()==-1) {z=0;x=-1;}
 
+
+        b3 = w.getBlockAt((b.getX()+x),(b.getY()+1),(b.getZ()+z));
+        b=w.getBlockAt(b.getX(),(b.getY()+1),b.getZ());
+        while(b3.getType()!=Material.AIR){
+            b3.setType(Material.AIR);
+            b=w.getBlockAt(b.getX(),(b.getY()+1),b.getZ());
+            b.setType(Material.AIR);
+            b=w.getBlockAt((b.getX()+x),b.getY(),(b.getZ()+z));
+            b.setType(Material.AIR);
+            b3=w.getBlockAt((b3.getX()+x),(b3.getY()+1),(b3.getZ()+z));
+
+        }
     }
 
 

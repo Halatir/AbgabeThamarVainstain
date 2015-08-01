@@ -1,22 +1,28 @@
 import net.minecraft.server.v1_7_R4.BlockMobSpawner;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Bat;
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftItemFrame;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.metadata.Metadatable;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -39,6 +45,8 @@ public class Main extends JavaPlugin implements Listener {
         log.info("[ThamarAb] Stopping...");
     }
 
+    ArrayList<Location> locs = new ArrayList<Location>();
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(command.getName().equalsIgnoreCase("Tunnel")) {
@@ -46,6 +54,7 @@ public class Main extends JavaPlugin implements Listener {
             if (sender instanceof Player) {
                 //get the Player
                 Player p=(Player) sender;
+                //if(p.getItemInHand().getType()== Material.DIRT)
                 //Locations für den Player und den Beginn des Tunnels
                 Location l=p.getLocation();
                 Location lp=p.getLocation();
@@ -81,13 +90,10 @@ public class Main extends JavaPlugin implements Listener {
             if(command.getName().equalsIgnoreCase("FortuneWheel")) {
                 //Check if its a player
                 if (sender instanceof Player) {
-                    //get the Player and her lcation
+                    //get the Player
                     Player p=(Player) sender;
-                    Location l=p.getLocation();
-                    //add 5 to the y of the location
-                    l.setY(l.getX() + 2);
-
-
+                    //Ein Glücksrad wird gebaut
+                   locs.add(Gluecksradbau(p).getLocation());
                 }
             }
         }
@@ -97,20 +103,38 @@ public class Main extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerInteractBlock(PlayerInteractEvent event){
-      /*  Player p=event.getPlayer();
-        if(p.getItemInHand().getType()== Material.DIRT) {
-            BlockIterator BI = new BlockIterator(p,5);
-            while(BI.hasNext()==true){
-                Block b=BI.next();
-                if(b.getType()== Material.WOOL){
+        Player p=event.getPlayer();
+        Block I=event.getClickedBlock();
+        for(Location l : locs) {
+            //Überprüfen, ob der Block mittelpunkt eines Rades ist
+            if(l==I.getLocation()) {
 
-                    break;
+                //Überprüfen ob er noch aus Obsidian besteht
+                if (I.getType() == Material.OBSIDIAN) {
+                    // save the last and the current time the Block is klicked
+                    Long LastT = p.getMetadata("LastTime").get(0).asLong();
+                    Long currentT = System.currentTimeMillis() / 1000L;
 
+                    //check if the passed time is high enouth
+                    if ((currentT - LastT) > 3) {
+                        //Neuer Zeitstempel wird auf dem Player abgelegt
+                        p.setMetadata("LastTime", new FixedMetadataValue(this, System.currentTimeMillis() / 1000L));
+                        //ItemStack drop = new ItemStack(Material.POTION, 1);
+                        //w1.dropItem(l,drop);
+                    }
+                    else{//Ausgabe, du ahst noch nicht ange genug gewartet//
+                     }
                 }
-            }
+                else {
+                    //Wenn der Block in der Liste der Glücksradblöcke ist, aber bereits zerstört wurde, wird er nun aus der Liste entfernt
+                    locs.remove(l);
+                }
 
-        }*/
+            }
+        }
     }
+
+
 
     //Funktion zum erhalten der Blickrichtung
     public Vector getDirection(float f){
@@ -215,6 +239,118 @@ public class Main extends JavaPlugin implements Listener {
             b3=w.getBlockAt((b3.getX()+x),(b3.getY()+1),(b3.getZ()+z));
 
         }
+    }
+
+
+    public Block Gluecksradbau(Player p){
+        World w1=p.getWorld();
+        Location l=p.getLocation();
+        float di=l.getYaw();
+        Vector d=getDirection(di);
+        Block g=w1.getBlockAt(l);
+
+
+
+        if(d.getX()==1 || d.getX()==-1){
+            //verschiebe das Glücksrad zwei Blöcke vor den Erbauer
+            if(d.getX()==1){
+                l.setX(l.getX() + 2);
+            }
+            else if(d.getX()==-1) {
+                l.setX(l.getX() - 2);
+            }
+
+
+            g=w1.getBlockAt(l);
+            g.setType(Material.BRICK);
+
+            l.setY(l.getY() + 2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.BRICK);
+
+            l.setY(l.getY() - 1);
+            l.setZ(l.getZ() - 1);
+             g=w1.getBlockAt(l);
+            g.setType(Material.BRICK);
+
+            l.setZ(l.getZ() + 2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.BRICK);
+
+
+            l.setY(l.getY() - 1);
+            g=w1.getBlockAt(l);
+            g.setType(Material.SPONGE);
+
+            l.setZ(l.getZ() - 2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.SPONGE);
+
+            l.setY(l.getY() + 2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.SPONGE);
+
+            l.setZ(l.getZ() + 2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.SPONGE);
+
+            l.setZ(l.getZ()-1);
+            l.setY(l.getY() - 1);
+            g=w1.getBlockAt(l);
+            g.setType(Material.OBSIDIAN);
+
+
+        }
+
+
+        else if(d.getZ()==1 || d.getZ()==-1) {
+            if(d.getZ()==1) {
+                l.setZ(l.getZ() + 2);
+            } else if(d.getZ()==-1){
+                l.setZ(l.getZ() - 2);
+            }
+            g=w1.getBlockAt(l);
+            g.setType(Material.BRICK);
+
+            l.setY(l.getY() + 2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.BRICK);
+
+            l.setY(l.getY() - 1);
+            l.setX(l.getX()-1);
+            g=w1.getBlockAt(l);
+            g.setType(Material.BRICK);
+
+            l.setX(l.getX() + 2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.BRICK);
+
+
+            l.setY(l.getY()-1);
+            g=w1.getBlockAt(l);
+            g.setType(Material.SPONGE);
+
+            l.setX(l.getX()-2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.SPONGE);
+
+            l.setY(l.getY()+2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.SPONGE);
+
+            l.setX(l.getX()+2);
+            g=w1.getBlockAt(l);
+            g.setType(Material.SPONGE);
+
+            l.setX(l.getX()-1);
+            l.setY(l.getY()-1);
+            g=w1.getBlockAt(l);
+            g.setType(Material.OBSIDIAN);
+
+
+        }
+
+    return g;
     }
 
 

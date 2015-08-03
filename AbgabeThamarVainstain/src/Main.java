@@ -9,8 +9,10 @@ import org.bukkit.craftbukkit.v1_7_R4.entity.CraftItemFrame;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -24,6 +26,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 
 /**
@@ -46,6 +49,8 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     ArrayList<Location> locs = new ArrayList<Location>();
+    Material [] D = new Material[50];
+
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -84,6 +89,7 @@ public class Main extends JavaPlugin implements Listener {
 
 
 
+
             }
         }
         else if(command.getName().equalsIgnoreCase("FortuneWheel")){
@@ -94,6 +100,25 @@ public class Main extends JavaPlugin implements Listener {
                     Player p=(Player) sender;
                     //Ein Glücksrad wird gebaut
                    locs.add(Gluecksradbau(p).getLocation());
+
+
+                    D [0]= Material.BAKED_POTATO;    D[8]= Material.DIAMOND;            D [15]= Material.DIAMOND_CHESTPLATE;
+                    D [2]= Material.BOW;             D[9]= Material.EXP_BOTTLE;         D [16]= Material.EYE_OF_ENDER;
+                    D [3]= Material.DIAMOND_BARDING; D [10]= Material.DIAMOND_SWORD;    D [17]= Material.GOLD_AXE;
+                    D [4]= Material.DIAMOND_BOOTS;   D [11]= Material.DIAMOND_AXE;      D [18]= Material.GOLD_BARDING;
+                    D [5]= Material.EMERALD;         D [12]= Material.DIAMOND_PICKAXE;  D [19]= Material.DIAMOND_HELMET;
+                    D [6]= Material.ENCHANTED_BOOK;  D [13]= Material.DIAMOND_LEGGINGS; D [20]= Material.GOLD_BOOTS;
+                    D [7]= Material.ENDER_PEARL;     D [14]= Material.DIAMOND_HOE;      D [22]= Material.GOLD_CHESTPLATE;
+                    D [29]= Material.GOLD_HELMET;    D [26]= Material.GOLDEN_APPLE;     D [23]= Material.DIAMOND_HOE;
+                    D [30]= Material.GOLD_HOE;       D [27]= Material.IRON_AXE;         D [24]= Material.DIAMOND_HOE;
+                    D [31]= Material.GOLD_LEGGINGS;  D [28]= Material.IRON_BARDING;     D [25]= Material.IRON_BOOTS;
+                    D [32]= Material.GOLD_SWORD;     D [35]= Material.IRON_HELMET;      D [38]= Material.IRON_CHESTPLATE;
+                    D [33]= Material.GOLD_AXE;       D [36]= Material.IRON_SWORD;       D [21]= Material.IRON_HOE;
+                    D [34]= Material.GOLD_PICKAXE;   D [37]= Material.IRON_PICKAXE;     D [39]= Material.MONSTER_EGG;
+                    D [40]= Material.STONE_SWORD;    D [44]= Material.STONE_PLATE;      D [47]= Material.STONE_AXE;
+                    D [41]= Material.WOOD_SWORD;     D [45]= Material.BRICK;            D [48]= Material.BONE;
+                    D [42]= Material.COAL;           D [46]= Material.BREAD;            D [49]= Material.FLINT;
+                    D [43]= Material.POTION;
                 }
             }
         }
@@ -102,30 +127,56 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    public void onPlayerLogin(PlayerLoginEvent e){
+
+        Player p = e.getPlayer();
+        p.setMetadata("LastTime", new FixedMetadataValue(this,0));
+    }
+    @EventHandler
     public void onPlayerInteractBlock(PlayerInteractEvent event){
-        Player p=event.getPlayer();
-        Block I=event.getClickedBlock();
-        for(Location l : locs) {
+        if (event.getAction()==Action.LEFT_CLICK_BLOCK) {
+
+            Player p = event.getPlayer();
+            Block I = event.getClickedBlock();
+            Location l=I.getLocation();
+           // System.out.println(I.getLocation());
+
+
             //Überprüfen, ob der Block mittelpunkt eines Rades ist
-            if(l==I.getLocation()) {
+            if (locs.contains(l)) {
+
 
                 //Überprüfen ob er noch aus Obsidian besteht
                 if (I.getType() == Material.OBSIDIAN) {
+
                     // save the last and the current time the Block is klicked
                     Long LastT = p.getMetadata("LastTime").get(0).asLong();
                     Long currentT = System.currentTimeMillis() / 1000L;
 
-                    //check if the passed time is high enouth
-                    if ((currentT - LastT) > 3) {
+                    //check if the passed time is high enouth 7200 für 2 stunden
+                    if ((currentT - LastT) > 2700) {
+
                         //Neuer Zeitstempel wird auf dem Player abgelegt
                         p.setMetadata("LastTime", new FixedMetadataValue(this, System.currentTimeMillis() / 1000L));
-                        //ItemStack drop = new ItemStack(Material.POTION, 1);
-                        //w1.dropItem(l,drop);
+                        Random r = new Random();
+
+                        //setDropLocation to the right side
+                        Vector dd =getDirection(p.getLocation().getYaw());
+                        if(dd.getX()==1){l.setX(l.getX() - 1);}
+                        if( dd.getZ()==1){l.setZ(l.getZ()-1);}
+                        if(dd.getX()==-1){l.setX(l.getX()+1);}
+                        if( dd.getZ()==-1){l.setZ(l.getZ()+1);}
+
+                        ItemStack drop = new ItemStack(D[r.nextInt(49)]);
+                        p.getWorld().dropItem(l, drop);
+
                     }
-                    else{//Ausgabe, du ahst noch nicht ange genug gewartet//
-                     }
+                    else {
+                       //Ausgabe, du ahst noch nicht ange genug gewartet//
+                    }
                 }
                 else {
+
                     //Wenn der Block in der Liste der Glücksradblöcke ist, aber bereits zerstört wurde, wird er nun aus der Liste entfernt
                     locs.remove(l);
                 }
@@ -299,7 +350,7 @@ public class Main extends JavaPlugin implements Listener {
             g=w1.getBlockAt(l);
             g.setType(Material.OBSIDIAN);
 
-
+            return g;
         }
 
 
@@ -347,7 +398,7 @@ public class Main extends JavaPlugin implements Listener {
             g=w1.getBlockAt(l);
             g.setType(Material.OBSIDIAN);
 
-
+            return g;
         }
 
     return g;

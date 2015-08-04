@@ -48,7 +48,9 @@ public class Main extends JavaPlugin implements Listener {
         log.info("[ThamarAb] Stopping...");
     }
 
+    //Liste zum Speichern aller Glückstradmittelpunkte
     ArrayList<Location> locs = new ArrayList<Location>();
+    // Liste mit Dropitems
     Material [] D = new Material[50];
 
 
@@ -57,39 +59,36 @@ public class Main extends JavaPlugin implements Listener {
         if(command.getName().equalsIgnoreCase("Tunnel")) {
             //Testen, ob der Sender ein Player ist
             if (sender instanceof Player) {
-                //get the Player
                 Player p=(Player) sender;
-                //if(p.getItemInHand().getType()== Material.DIRT)
-                //Locations für den Player und den Beginn des Tunnels
-                Location l=p.getLocation();
-                Location lp=p.getLocation();
+                //Testen, ob der Player das erwünschte Objekt in der hand hält(Eisen-Spitzhacke)
+                if(p.getItemInHand().getType()== Material.IRON_PICKAXE) {
+                    //Locations für den Player und den Beginn des Tunnels
+                    Location l = p.getLocation();
+                    Location lp = p.getLocation();
 
-                World w=p.getWorld();
+                    World w = p.getWorld();
 
-                //geringes versetzen des Players
-                lp.setZ(((int) l.getZ()) + 0.5);
-                p.teleport(lp);
+                    //geringes versetzen des Players
+                    lp.setZ(((int) l.getZ()) + 0.5);
+                    p.teleport(lp);
 
-               //Das Loch als Einstieg für den Tunnel
-               for(int i=1 ;i<4; i++){
-                   Block a;
-                   l.setY(((int)l.getY())-1);
-                   a = w.getBlockAt((int) l.getX(), (int) l.getY(), (int) l.getZ());
-                   a.setType(Material.AIR);
-               }
+                    //Das Loch als Einstieg für den Tunnel
+                    for (int i = 1; i < 4; i++) {
+                        Block a;
+                        l.setY(((int) l.getY()) - 1);
+                        a = w.getBlockAt((int) l.getX(), (int) l.getY(), (int) l.getZ());
+                        a.setType(Material.AIR);
+                    }
 
-                //Vector der Position, an dem der Tunnel beginnen soll
-                Vector start=new Vector((int)l.getX(),(int)l.getY(),(int)l.getZ());
-                //Richtung festlegen
-                float f= p.getLocation().getYaw();
-                Vector Yaw=getDirection(f);
+                    //Vector der Position, an dem der Tunnel beginnen soll
+                    Vector start = new Vector((int) l.getX(), (int) l.getY(), (int) l.getZ());
+                    //Richtung festlegen
+                    float f = p.getLocation().getYaw();
+                    Vector Yaw = getDirection(f);
 
-                //Der Tunnel wird gebaut
-                Tunnelbau(w,start,Yaw);
-
-
-
-
+                    //Der Tunnel wird gebaut
+                    Tunnelbau(w, start, Yaw);
+                }
             }
         }
         else if(command.getName().equalsIgnoreCase("FortuneWheel")){
@@ -127,52 +126,54 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     @EventHandler
+    //Anfügen eines Datenspeichers unter dem Schlüsselwertes "LastTime" falls nicht vorhanden
     public void onPlayerLogin(PlayerLoginEvent e){
-
         Player p = e.getPlayer();
+        if(!p.hasMetadata("LastTime"))
         p.setMetadata("LastTime", new FixedMetadataValue(this,0));
     }
     @EventHandler
     public void onPlayerInteractBlock(PlayerInteractEvent event){
+        //Testen ob Linksklick ausgeführt wurde
         if (event.getAction()==Action.LEFT_CLICK_BLOCK) {
-
+            //speichern der notwendigen Informationen
             Player p = event.getPlayer();
             Block I = event.getClickedBlock();
             Location l=I.getLocation();
-           // System.out.println(I.getLocation());
 
-
-            //Überprüfen, ob der Block mittelpunkt eines Rades ist
+            //Überprüfen, ob der Block Mittelpunkt eines Rades ist
             if (locs.contains(l)) {
 
 
                 //Überprüfen ob er noch aus Obsidian besteht
                 if (I.getType() == Material.OBSIDIAN) {
 
-                    // save the last and the current time the Block is klicked
+                    // Auslesen der letzten und der aktuellen "Drehzeit"
                     Long LastT = p.getMetadata("LastTime").get(0).asLong();
                     Long currentT = System.currentTimeMillis() / 1000L;
 
-                    //check if the passed time is high enouth 7200 für 2 stunden
+                    //Testen, ob die vergangene Zeit bereits lang genug ist.7200 für 2 Stunden
                     if ((currentT - LastT) > 2700) {
 
                         //Neuer Zeitstempel wird auf dem Player abgelegt
                         p.setMetadata("LastTime", new FixedMetadataValue(this, System.currentTimeMillis() / 1000L));
                         Random r = new Random();
 
-                        //setDropLocation to the right side
+                        //Festlegen, auf welcher Seite das Item fallen soll
                         Vector dd =getDirection(p.getLocation().getYaw());
                         if(dd.getX()==1){l.setX(l.getX() - 1);}
                         if( dd.getZ()==1){l.setZ(l.getZ()-1);}
                         if(dd.getX()==-1){l.setX(l.getX()+1);}
                         if( dd.getZ()==-1){l.setZ(l.getZ()+1);}
 
+                        //Fallen des Items
                         ItemStack drop = new ItemStack(D[r.nextInt(49)]);
                         p.getWorld().dropItem(l, drop);
 
                     }
                     else {
                        //Ausgabe, du ahst noch nicht ange genug gewartet//
+                        Bukkit.getServer().broadcast("Du darfst noch nicht erneut am Glücksrad drehen","");
                     }
                 }
                 else {
@@ -294,6 +295,7 @@ public class Main extends JavaPlugin implements Listener {
 
 
     public Block Gluecksradbau(Player p){
+        //Speichern der Notwendigen Informationen
         World w1=p.getWorld();
         Location l=p.getLocation();
         float di=l.getYaw();
@@ -303,7 +305,7 @@ public class Main extends JavaPlugin implements Listener {
 
 
         if(d.getX()==1 || d.getX()==-1){
-            //verschiebe das Glücksrad zwei Blöcke vor den Erbauer
+            //verschiebe das Glücksrad zwei Blöcke vor den Erbauer in Blickrichtung
             if(d.getX()==1){
                 l.setX(l.getX() + 2);
             }
@@ -311,7 +313,7 @@ public class Main extends JavaPlugin implements Listener {
                 l.setX(l.getX() - 2);
             }
 
-
+            //Aufbau des Rades unterteilt und gelbe, rote Bloöcke, dann der Mittelblock
             g=w1.getBlockAt(l);
             g.setType(Material.BRICK);
 
@@ -350,6 +352,7 @@ public class Main extends JavaPlugin implements Listener {
             g=w1.getBlockAt(l);
             g.setType(Material.OBSIDIAN);
 
+            //Rückgabe des Obsidianblockes zum abspeichern
             return g;
         }
 
@@ -360,6 +363,8 @@ public class Main extends JavaPlugin implements Listener {
             } else if(d.getZ()==-1){
                 l.setZ(l.getZ() - 2);
             }
+
+            //Aufbau des Rades unterteilt und gelbe, rote Bloöcke, dann der Mittelblock
             g=w1.getBlockAt(l);
             g.setType(Material.BRICK);
 
@@ -398,6 +403,7 @@ public class Main extends JavaPlugin implements Listener {
             g=w1.getBlockAt(l);
             g.setType(Material.OBSIDIAN);
 
+            //Rückgabe des Obsidianblockes zum abspeichern
             return g;
         }
 

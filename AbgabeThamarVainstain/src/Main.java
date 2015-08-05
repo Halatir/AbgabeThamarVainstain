@@ -172,8 +172,9 @@ public class Main extends JavaPlugin implements Listener {
 
                     }
                     else {
-                       //Ausgabe, du ahst noch nicht ange genug gewartet//
-                        Bukkit.getServer().broadcast("Du darfst noch nicht erneut am Glücksrad drehen","");
+                       //Ausgabe, du ahst noch nicht lange genug gewartet//
+
+                        Bukkit.getServer().broadcastMessage("Du darfst noch nicht erneut am Glücksrad drehen");
                     }
                 }
                 else {
@@ -302,20 +303,19 @@ public class Main extends JavaPlugin implements Listener {
         Vector d=getDirection(di);
         Block g=w1.getBlockAt(l);
 
-
-
         if(d.getX()==1 || d.getX()==-1){
             //verschiebe das Glücksrad zwei Blöcke vor den Erbauer in Blickrichtung
             if(d.getX()==1){
                 l.setX(l.getX() + 2);
             }
-            else if(d.getX()==-1) {
+            else {
                 l.setX(l.getX() - 2);
             }
 
             //Aufbau des Rades unterteilt und gelbe, rote Bloöcke, dann der Mittelblock
             g=w1.getBlockAt(l);
             g.setType(Material.BRICK);
+
 
             l.setY(l.getY() + 2);
             g=w1.getBlockAt(l);
@@ -358,9 +358,9 @@ public class Main extends JavaPlugin implements Listener {
 
 
         else if(d.getZ()==1 || d.getZ()==-1) {
-            if(d.getZ()==1) {
+            if(d.getZ()==1) {//South
                 l.setZ(l.getZ() + 2);
-            } else if(d.getZ()==-1){
+            } else {//North
                 l.setZ(l.getZ() - 2);
             }
 
@@ -373,7 +373,7 @@ public class Main extends JavaPlugin implements Listener {
             g.setType(Material.BRICK);
 
             l.setY(l.getY() - 1);
-            l.setX(l.getX()-1);
+            l.setX(l.getX() - 1);
             g=w1.getBlockAt(l);
             g.setType(Material.BRICK);
 
@@ -382,21 +382,22 @@ public class Main extends JavaPlugin implements Listener {
             g.setType(Material.BRICK);
 
 
-            l.setY(l.getY()-1);
+            l.setY(l.getY() - 1);
             g=w1.getBlockAt(l);
             g.setType(Material.SPONGE);
 
-            l.setX(l.getX()-2);
+            l.setX(l.getX() - 2);
             g=w1.getBlockAt(l);
             g.setType(Material.SPONGE);
 
-            l.setY(l.getY()+2);
+            l.setY(l.getY() + 2);
             g=w1.getBlockAt(l);
             g.setType(Material.SPONGE);
 
-            l.setX(l.getX()+2);
+            l.setX(l.getX() +2);
             g=w1.getBlockAt(l);
             g.setType(Material.SPONGE);
+
 
             l.setX(l.getX()-1);
             l.setY(l.getY()-1);
